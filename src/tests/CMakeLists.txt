@@ -52,6 +52,7 @@ set(test_complex_FILES test_complex.c)
 set(test_convert_elem_FILES test_convert_elem.c)
 set(test_back_comp_FILES test_back_comp.c)
 set(test_particle_FILES test_particle.c)
+set(integration_rules_FILES integration_rules.c)
 #set(cgiof_FILES cgiof.F90)
 #set(cgwrite_FILES cgwrite.F90)
 #set(cgread_FILES cgread.F90)
@@ -94,6 +95,7 @@ add_executable( test_complex         ${test_complex_FILES}         )
 add_executable( test_convert_elem    ${test_convert_elem_FILES}    )
 add_executable( test_back_comp       ${test_back_comp_FILES}       )
 add_executable( test_particle        ${test_particle_FILES}        )
+add_executable( integration_rules    ${integration_rules_FILES}    )
 #
 set(C_TESTS_LIST
 	cgioc
@@ -118,9 +120,10 @@ set(C_TESTS_LIST
 	test_family_tree     
 	test_bbox            
 	test_complex         
-        test_convert_elem
-        test_back_comp
-        test_particle)
+	test_convert_elem
+	test_back_comp
+	test_particle
+	integration_rules)
 set(SKIP_TESTS
         dbtest)
 # Modern Linking
