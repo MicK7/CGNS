@@ -240,6 +240,19 @@ typedef struct {            /* IndexArray/Range_t Node      */
     void *data;             /* data (only loaded in MODE_MODIFY     */
 } cgns_ptset;               /*       when version mismatch)         */
 
+typedef struct {            /* Offset_t Node      */
+    char_33 name;           /* name of ADF node                     */
+    double id;              /* ADF ID number (address) of node      */
+    cgns_link *link;        /* link information         */
+    int in_link;            /* set if child of a linked node        */
+    char_33 data_type;      /* type of data I4/I8                   */
+    cgsize_t data_size;     /* size of data nitems+1                */
+    void *data;             /* data (only loaded in MODE_MODIFY     */
+                            /*       when version mismatch)         */
+    /* cgsize_t range[2]; */ /* index range of partial stored offset,
+                                not specified by standard */
+} cgns_offset;
+
 typedef struct cgns_user_data_s /* UserDefinedData_t Node       */
 {
     char_33 name;           /* name of ADF node                     */
@@ -295,6 +308,20 @@ typedef struct {            /* DiscreteData_t Node                  */
     int nuser_data;         /* number of user defined data nodes    */  /* V2.1 */
     cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
 } cgns_discrete;
+
+typedef struct {
+  char_33 name;           /* name of ADF node         */
+  double id;              /* ADF ID number (address) of node      */
+  cgns_link *link;        /* link information         */  /* V2.1 */
+  int in_link;            /* set if child of a linked node        */
+  char_md path;           /* path to rule collection */
+  cgns_array *path_array; /* path array struct to make it easier for internals */
+  cgns_array *ids;        /* ids definition global or local */
+  int ndescr;             /* no of Descriptor_t nodes             */
+  cgns_descr *descr;      /* ptrs to in-memory copy of descr      */
+  int nuser_data;         /* number of user defined data nodes    */  /* V2.1 */
+  cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
+} cgns_element_association; /* CPEX0047 */
 
 typedef struct {            /*  ConvergenceHistory_t node       */
     char_33 name;           /* name of ADF node                     */
@@ -591,6 +618,9 @@ typedef struct {            /* BCDataSet_t node         */
     cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
     CGNS_ENUMT(GridLocation_t) location;/* Grid location where data is recorded */
     cgns_ptset *ptset;      /* PointList, PointRange                */
+    /* CPEX 0047 */
+    cgns_element_association *itgrules; /*  */
+    cgns_offset *pt_start_offset;       /*  */
 } cgns_dataset;
 
 typedef struct {            /* Elements_t node                      */
@@ -610,6 +640,9 @@ typedef struct {            /* Elements_t node                      */
     cgns_array *parface;    /* ParentElementsPosition               */
     int nuser_data;         /* number of user defined data nodes    */  /* V2.1 */
     cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
+    /* CPEX 0047 */
+    int nprops;                           /* number of associated properties */
+    cgns_element_association *properties; /* properties associated to elements */
 } cgns_section;
 
 typedef struct {            /* BC_t node                */
@@ -638,6 +671,9 @@ typedef struct {            /* BC_t node                */
     /* CPEX 0034 */
     int nfamname;
     cgns_famname *famname;
+    /* CPEX 0047 */
+    cgns_element_association *itgrules; /* */
+    cgns_offset *pt_start_offset;       /* */
 } cgns_boco;
 
 typedef struct {            /* ZoneBC_t node            */
@@ -740,6 +776,9 @@ typedef struct {            /* FlowSolution_t node          */
     cgns_units *units;      /* Dimensional Units                    */
     int nuser_data;         /* number of user defined data nodes    */  /* V2.1 */
     cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
+    /* CPEX0047 */
+    cgns_element_association *itgrules; /* Map integration point    */
+    cgns_offset *pt_start_offset; /* Integration Point Start Offset */
 } cgns_sol;
 
 typedef struct {            /* GridCoordinates_t node       */
@@ -846,6 +885,9 @@ typedef struct {            /* ZoneSubRegion_t Node                 */
     /* CPEX 0034 */
     int nfamname;
     cgns_famname *famname;
+    /* CPEX 0047*/
+    cgns_element_association *itgrules;
+    cgns_offset *pt_start_offset;
 } cgns_subreg;
 
 typedef struct {            /* Zone_t Node              */
@@ -943,7 +985,7 @@ typedef struct cgns_family_s {            /* Family_t node            */
     int nuser_data;         /* number of user defined data nodes    */  /* V2.1 */
     cgns_user_data *user_data; /* User defined data.        */  /* V2.1 */
     cgns_rotating *rotating;/* ptrs to in-memory copy of Rot. Coord.*/
-/* CPEX 0033 */
+    /* CPEX 0033 */
     int nfamname;
     cgns_famname *famname;
     /* ** FAMILY TREE ** */
@@ -1008,6 +1050,47 @@ typedef struct {              /* ParticleZone_t node */ /* CPEX 0046 V4.5*/
    cgns_user_data *user_data; /* User defined data.        */
 }cgns_pzone;
 
+typedef struct {
+  char_33 name;           /* name of ADF node         */
+  double id;              /* ADF ID number (address) of node      */
+  cgns_link *link;        /* link information         */
+  int in_link;            /* set if child of a linked node        */
+  int ndescr;             /* no of Descriptor_t nodes             */
+  cgns_descr *descr;      /* ptrs to in-memory copy of descr      */
+  CGNS_ENUMT(ElementType_t) el_type; /* type of element for wich the integratio rule is defined */
+  CGNS_ENUMT(ElementSpace_t) el_space; /* element space for the integration points ans weights
+                                          either Parametric or Barycentric */
+  int npoints;            /* number of integration points */
+  int parametric_dim;     /* parametric dimension used in case of parametric space */
+  int num_vertices;       /* number of vertices in the element used for barycentric space */
+  IntegrationName_t *integration_names; /* names of integration formula */
+  cgns_array *weights;    /* ptr to in-memory copy of weights */
+  cgns_array *points;     /* ptr to in-memory copy of points  */
+  int nuser_data;            /* number of user defined data nodes */
+  cgns_user_data *user_data; /* User defined data. */
+} cgns_integration_rule;
+
+typedef struct {
+  double id; /* ADF ID number (address) of node      */
+  int nids;  /* number of mapped ids */
+  int *ids;  /* ptrs to in-memory copy of ids */
+  char_33 *names; /* ptrs to in-memory copy of mapped names */
+} cgns_map_names;
+
+typedef struct {          /* RulesCollection_t node */
+  char_33 name;           /* name of ADF node         */
+  double id;              /* ADF ID number (address) of node      */
+  cgns_link *link;        /* link information         */
+  int in_link;            /* set if child of a linked node        */
+  int ndescr;             /* no of Descriptor_t nodes             */
+  cgns_descr *descr;      /* ptrs to in-memory copy of descr      */
+  int nitems;             /* number of integration rules */
+  cgns_integration_rule *items; /* ptrs to in-memory copy of integration rules */
+  cgns_map_names *id_to_qualifier; /* Ids, Names Mapping */
+  int nuser_data;            /* number of user defined data nodes    */
+  cgns_user_data *user_data; /* User defined data.        */
+} cgns_rules_collection;
+
 typedef struct {            /* CGNSBase_t Node          */
     char_33 name;           /* name of ADF node                     */
     double id;              /* ADF ID number (address) of node      */
@@ -1039,6 +1122,9 @@ typedef struct {            /* CGNSBase_t Node          */
     int npzones;            /* number of ParticleZone_t nodes           */  /* V4.5 */
     cgns_pzone *pzone;      /* ptrs to in-memory copy of ParticleZone_t nodes */ /* V4.5 */
     cgns_hashmap_object *pzonemap; /* hashmap to check duplicate particle zone names */ /* V4.5 */
+    /* CPEX 0047 */
+    int nitgrulescolls; /* number of integration rules collections  */
+    cgns_rules_collection *itgrulescolls; /* ptrs to in-memory copies of rules collections */
 } cgns_base;
 
 typedef struct {
@@ -1135,6 +1221,7 @@ CGNSDLL cgns_rotating  *cgi_get_rotating (cgns_file *cg, int B, int Z);
 CGNSDLL cgns_bprop     *cgi_get_bprop    (cgns_file *cg, int B, int Z, int BC);
 CGNSDLL cgns_cprop     *cgi_get_cprop    (cgns_file *cg, int B, int Z, int J);
 CGNSDLL cgns_subreg    *cgi_get_subreg   (cgns_file *cg, int B, int Z, int S);
+CGNSDLL cgns_rules_collection *cgi_get_rules_collection(cgns_file *cg, int B, int C);
 
 CGNSDLL cgns_pzone      *cgi_get_particle          (cgns_file *cg, int B, int P);
 CGNSDLL cgns_pcoor      *cgi_get_particle_pcoor    (cgns_file *cg, int B, int P, int C);
@@ -1183,6 +1270,8 @@ cgns_dataset * cgi_bcdataset_address(int local_mode, int given_no,
 cgns_pequations *cgi_particle_equations_address(int local_mode, int *ier);
 cgns_pgoverning *cgi_particle_governing_address(int local_mode, int *ier);
 cgns_pmodel *cgi_particle_model_address(int local_mode, char const *ModelLabel, int *ier);
+cgns_offset *cgi_offset_address(int local_mode, int allow_dup, char const *given_name, int* have_dup, int *ier);
+cgns_element_association *cgi_element_association_address(int local_mode, char const *given_name, int *ier);
 
 
 /* read CGNS file into internal database */
@@ -1250,6 +1339,18 @@ int cgi_read_user_data(int in_link, double parent_id, int *nuser_data,
 int cgi_read_subregion(int in_link, double parent_id, int *nsubreg,
                        cgns_subreg **subreg);
 cgns_link *cgi_read_link(double node_id);
+int cgi_read_rules_collection(int in_link, double parent_id, int* ncollections,
+                              cgns_rules_collection** collections);
+int cgi_read_map_name(int in_link, double parent_id, cgns_map_names **map);
+int cgi_read_integration_rules(int in_link, double parent_id, int* nitems,
+                               cgns_integration_rule **items);
+int cgi_read_element_association(int in_link, double parent_id, int *nprops,
+                       cgns_element_association **properties);
+int cgi_read_element_association_from_name(int in_link, double parent_id, char* name,
+                                           cgns_element_association **property);
+int cgi_read_offset(cgns_offset *array, char *parent_label);
+int cgi_read_offset_from_name(int in_link, double parent_id, char* parent_label,
+                         char* offsetname, cgns_offset** array);
 
 CGNSDLL int cgi_datasize(int ndim, cgsize_t *dims,
 			 CGNS_ENUMT(GridLocation_t) location,
@@ -1404,6 +1505,7 @@ int cgi_check_location(int dim, CGNS_ENUMT(ZoneType_t) type,
 	CGNS_ENUMT(GridLocation_t) loc);
 
 CGNSDLL int cgi_read_int_data(double id, char_33 data_type, cgsize_t cnt, cgsize_t *data);
+int cgi_read_offset(cgns_offset *array, char *parent_label);
 int cgi_read_offset_data_type(double id, char const *data_type, cgsize_t start, cgsize_t end, char const *to_type, void *to_data);
 int cgi_convert_data(cgsize_t cnt,
 	CGNS_ENUMT(DataType_t) from_type, const void *from_data,
@@ -1472,6 +1574,13 @@ void cgi_free_psol(cgns_psol *sol);
 void cgi_free_particle_model(cgns_pmodel *model);
 void cgi_free_particle_equations(cgns_pequations *equations);
 void cgi_free_particle_governing(cgns_pgoverning *governing);
+void cgi_free_element_association(cgns_element_association *connector);
+void cgi_free_rules_collection(cgns_rules_collection *col);
+void cgi_free_integration_rule(cgns_integration_rule *rule);
+void cgi_free_integration_names(IntegrationName_t *data);
+void cgi_free_map_names(cgns_map_names *map);
+void cgi_free_offset(cgns_offset *offset);
+
 
 #ifdef __cplusplus
 }
