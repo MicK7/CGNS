@@ -1348,9 +1348,6 @@ int cgi_read_element_association(int in_link, double parent_id, int *nprops,
                        cgns_element_association **properties);
 int cgi_read_element_association_from_name(int in_link, double parent_id, char* name,
                                            cgns_element_association **property);
-int cgi_read_offset(cgns_offset *array, char *parent_label);
-int cgi_read_offset_from_name(int in_link, double parent_id, char* parent_label,
-                         char* offsetname, cgns_offset** array);
 
 CGNSDLL int cgi_datasize(int ndim, cgsize_t *dims,
 			 CGNS_ENUMT(GridLocation_t) location,
@@ -1507,6 +1504,8 @@ int cgi_check_location(int dim, CGNS_ENUMT(ZoneType_t) type,
 CGNSDLL int cgi_read_int_data(double id, char_33 data_type, cgsize_t cnt, cgsize_t *data);
 int cgi_read_offset(cgns_offset *array, char *parent_label);
 int cgi_read_offset_data_type(double id, char const *data_type, cgsize_t start, cgsize_t end, char const *to_type, void *to_data);
+int cgi_read_offset_from_name(int in_link, double parent_id, char* parent_label,
+                         char* offsetname, cgns_offset** array);
 int cgi_convert_data(cgsize_t cnt,
 	CGNS_ENUMT(DataType_t) from_type, const void *from_data,
         CGNS_ENUMT(DataType_t) to_type, void *to_data);
